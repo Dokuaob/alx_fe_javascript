@@ -8,19 +8,19 @@
 <body>
   <h1>Dynamic Quote Generator</h1>
 
-  <!-- Category selector -->
-  <select id="categoryFilter">
+  <!-- Category selector with onchange for filtering -->
+  <select id="categoryFilter" onchange="filterQuotes()">
     <option value="all">All Categories</option>
   </select>
 
-  <!-- Display random quote -->
+  <!-- Quote display -->
   <div id="quoteDisplay" style="margin: 20px 0;"></div>
   <button id="newQuote">Show New Quote</button>
 
-  <!-- Add new quote form (created by JS) -->
+  <!-- Add quote form (created by JS) -->
   <div id="formContainer" style="margin-top: 30px;"></div>
 
-  <!-- Export/Import -->
+  <!-- Export and Import -->
   <div style="margin-top: 30px;">
     <button id="exportBtn">Export Quotes (JSON)</button>
     <input type="file" id="importFile" accept=".json" />
