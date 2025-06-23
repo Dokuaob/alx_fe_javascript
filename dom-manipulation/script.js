@@ -4,12 +4,17 @@ let quotes = [
   { text: "Knowledge is power.", category: "Wisdom" }
 ];
 
-// DOM elements
+// Simulated server data (replace this with real fetch in production)
+const simulatedServerQuotes = [
+  { text: "A server-synced quote.", category: "Server" },
+  { text: "Keep pushing forward.", category: "Motivation" }
+];
+
 const quoteDisplay = document.getElementById('quoteDisplay');
 const categoryFilter = document.getElementById('categoryFilter');
 const newQuoteBtn = document.getElementById('newQuote');
 
-// Load quotes from localStorage
+// Load quotes from local storage
 function loadQuotes() {
   const stored = localStorage.getItem('quotes');
   if (stored) {
@@ -17,12 +22,21 @@ function loadQuotes() {
   }
 }
 
-// Save quotes to localStorage
+// Save quotes to local storage
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Populate the category dropdown
+// Display a sync message to user
+function showSyncNotice(message) {
+  const syncNotice = document.getElementById('syncNotice');
+  syncNotice.textContent = message;
+  setTimeout(() => {
+    syncNotice.textContent = '';
+  }, 5000);
+}
+
+// Populate category dropdown
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
@@ -33,14 +47,13 @@ function populateCategories() {
     categoryFilter.appendChild(option);
   });
 
-  // Restore last selected category from localStorage
   const savedCategory = localStorage.getItem('selectedCategory');
   if (savedCategory) {
     categoryFilter.value = savedCategory;
   }
 }
 
-// Display a random quote based on selected category
+// Show a random quote from selected category
 function showRandomQuote() {
   const selected = categoryFilter.value;
   const filtered = selected === 'all'
@@ -54,19 +67,17 @@ function showRandomQuote() {
 
   const randomIndex = Math.floor(Math.random() * filtered.length);
   quoteDisplay.textContent = filtered[randomIndex].text;
-
-  // Save last shown quote
   sessionStorage.setItem('lastQuote', quoteDisplay.textContent);
 }
 
-// Filter quotes and save selected category to localStorage
+// Filter quotes by selected category
 function filterQuotes() {
   const selected = categoryFilter.value;
   localStorage.setItem('selectedCategory', selected);
   showRandomQuote();
 }
 
-// Add a new quote and update categories
+// Add a new quote
 function addQuote() {
   const text = document.getElementById('newQuoteText').value.trim();
   const category = document.getElementById('newQuoteCategory').value.trim();
@@ -84,7 +95,7 @@ function addQuote() {
   showRandomQuote();
 }
 
-// Dynamically create form inputs for new quotes
+// Create form to add new quotes
 function createAddQuoteForm() {
   const formContainer = document.getElementById('formContainer');
 
@@ -109,7 +120,7 @@ function createAddQuoteForm() {
   addButton.addEventListener('click', addQuote);
 }
 
-// Export quotes to a downloadable JSON file
+// Export quotes to JSON
 function exportQuotesToJson() {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -143,6 +154,36 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
+// Simulate fetch from server (mock)
+function fetchServerQuotes() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(simulatedServerQuotes);
+    }, 1000);
+  });
+}
+
+// Sync local data with server
+function syncWithServer() {
+  fetchServerQuotes().then(serverQuotes => {
+    let updated = false;
+
+    serverQuotes.forEach(serverQuote => {
+      const exists = quotes.some(local => local.text === serverQuote.text && local.category === serverQuote.category);
+      if (!exists) {
+        quotes.push(serverQuote);
+        updated = true;
+      }
+    });
+
+    if (updated) {
+      saveQuotes();
+      populateCategories();
+      showSyncNotice("Quotes synced with server. Server updates applied.");
+    }
+  });
+}
+
 // Event listeners
 newQuoteBtn.addEventListener('click', showRandomQuote);
 document.getElementById('exportBtn').addEventListener('click', exportQuotesToJson);
@@ -154,6 +195,8 @@ populateCategories();
 showRandomQuote();
 createAddQuoteForm();
 
-// Restore last quote (sessionStorage)
 const last = sessionStorage.getItem('lastQuote');
 if (last) quoteDisplay.textContent = last;
+
+// Periodic server sync every 30 seconds
+setInterval(syncWithServer, 30000);
