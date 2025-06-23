@@ -7,6 +7,7 @@ let quotes = [
 const quoteDisplay = document.getElementById('quoteDisplay');
 const categoryFilter = document.getElementById('categoryFilter');
 const newQuoteBtn = document.getElementById('newQuote');
+const addQuoteBtn = document.getElementById('addQuote'); // Ensure this ID matches HTML
 
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
@@ -50,6 +51,8 @@ function addQuote() {
 
 newQuoteBtn.addEventListener('click', showRandomQuote);
 categoryFilter.addEventListener('change', showRandomQuote);
+addQuoteBtn.addEventListener('click', addQuote); // Important!
 
+// Initial load
 populateCategories();
 showRandomQuote();
