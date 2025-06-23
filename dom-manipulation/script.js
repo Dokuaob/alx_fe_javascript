@@ -21,7 +21,7 @@ function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Show sync notification
+// Show notification message to user
 function showSyncNotice(message) {
   const syncNotice = document.getElementById('syncNotice');
   syncNotice.textContent = message;
@@ -30,7 +30,7 @@ function showSyncNotice(message) {
   }, 5000);
 }
 
-// Populate category dropdown
+// Populate dropdown from unique categories
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
@@ -47,7 +47,7 @@ function populateCategories() {
   }
 }
 
-// Show random quote based on selected category
+// Display random quote
 function showRandomQuote() {
   const selected = categoryFilter.value;
   const filtered = selected === 'all' ? quotes : quotes.filter(q => q.category === selected);
@@ -63,14 +63,14 @@ function showRandomQuote() {
   sessionStorage.setItem('lastQuote', quoteDisplay.textContent);
 }
 
-// Filter quotes
+// Filter by category and save preference
 function filterQuotes() {
   const selected = categoryFilter.value;
   localStorage.setItem('selectedCategory', selected);
   showRandomQuote();
 }
 
-// Add quote and POST to server
+// Add quote and sync to server
 async function addQuote() {
   const text = document.getElementById('newQuoteText').value.trim();
   const category = document.getElementById('newQuoteCategory').value.trim();
@@ -86,7 +86,7 @@ async function addQuote() {
   populateCategories();
   showRandomQuote();
 
-  // POST to mock API (checker requires "Content-Type")
+  // POST to mock API using "Content-Type"
   await fetch("https://jsonplaceholder.typicode.com/posts", {
     method: "POST",
     body: JSON.stringify(newQuote),
@@ -101,7 +101,7 @@ async function addQuote() {
   document.getElementById('newQuoteCategory').value = '';
 }
 
-// Create form to add quotes
+// Create quote input form
 function createAddQuoteForm() {
   const formContainer = document.getElementById('formContainer');
 
@@ -126,19 +126,19 @@ function createAddQuoteForm() {
   addButton.addEventListener('click', addQuote);
 }
 
-// ALX checker-required function name
+// Required: fetch from mock API
 async function fetchQuotesFromServer() {
   const response = await fetch("https://jsonplaceholder.typicode.com/posts");
   const data = await response.json();
 
-  // Simulated valid quote structure
+  // Simulate quote list
   return [
     { text: "A server-synced quote.", category: "Server" },
     { text: "Keep pushing forward.", category: "Motivation" }
   ];
 }
 
-// ALX checker-required function name
+// Required: sync with server and show exact message
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let updated = false;
@@ -154,11 +154,11 @@ async function syncQuotes() {
   if (updated) {
     saveQuotes();
     populateCategories();
-    showSyncNotice("Quotes synced with server. Server updates applied.");
+    showSyncNotice("Quotes synced with server!");
   }
 }
 
-// Export to JSON
+// Export quotes to JSON
 function exportQuotesToJson() {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -171,7 +171,7 @@ function exportQuotesToJson() {
   document.body.removeChild(link);
 }
 
-// Import quotes from JSON file
+// Import from uploaded JSON file
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function(e) {
@@ -197,14 +197,15 @@ newQuoteBtn.addEventListener('click', showRandomQuote);
 document.getElementById('exportBtn').addEventListener('click', exportQuotesToJson);
 document.getElementById('importFile').addEventListener('change', importFromJsonFile);
 
-// Init
+// Initialization
 loadQuotes();
 populateCategories();
 showRandomQuote();
 createAddQuoteForm();
 
+// Restore last quote
 const last = sessionStorage.getItem('lastQuote');
 if (last) quoteDisplay.textContent = last;
 
-// Periodic sync (visible to checker)
+// Periodic sync (every 30 seconds)
 setInterval(syncQuotes, 30000);
