@@ -71,7 +71,7 @@ function filterQuotes() {
 }
 
 // Add quote and simulate POST to server
-function addQuote() {
+async function addQuote() {
   const text = document.getElementById('newQuoteText').value.trim();
   const category = document.getElementById('newQuoteCategory').value.trim();
 
@@ -86,16 +86,16 @@ function addQuote() {
   populateCategories();
   showRandomQuote();
 
-  // Simulate POST to mock API
-  fetch("https://jsonplaceholder.typicode.com/posts", {
+  // Simulate POST to mock API using async/await
+  await fetch("https://jsonplaceholder.typicode.com/posts", {
     method: "POST",
     body: JSON.stringify(newQuote),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
     }
-  })
-    .then(res => res.json())
-    .then(() => showSyncNotice("Quote also synced to server."));
+  });
+
+  showSyncNotice("Quote also synced to server.");
 
   document.getElementById('newQuoteText').value = '';
   document.getElementById('newQuoteCategory').value = '';
@@ -126,38 +126,36 @@ function createAddQuoteForm() {
   addButton.addEventListener('click', addQuote);
 }
 
-// Checker expects this exact name
-function fetchQuotesFromServer() {
-  return fetch("https://jsonplaceholder.typicode.com/posts")
-    .then(response => response.json())
-    .then(() => {
-      // Simulated quote set from server
-      return [
-        { text: "A server-synced quote.", category: "Server" },
-        { text: "Keep pushing forward.", category: "Motivation" }
-      ];
-    });
+// Required name: fetchQuotesFromServer
+async function fetchQuotesFromServer() {
+  const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+  const data = await response.json();
+
+  // Simulated server quote data
+  return [
+    { text: "A server-synced quote.", category: "Server" },
+    { text: "Keep pushing forward.", category: "Motivation" }
+  ];
 }
 
-// Checker expects this exact name
-function syncQuotes() {
-  fetchQuotesFromServer().then(serverQuotes => {
-    let updated = false;
+// Required name: syncQuotes
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+  let updated = false;
 
-    serverQuotes.forEach(serverQuote => {
-      const exists = quotes.some(local => local.text === serverQuote.text && local.category === serverQuote.category);
-      if (!exists) {
-        quotes.push(serverQuote);
-        updated = true;
-      }
-    });
-
-    if (updated) {
-      saveQuotes();
-      populateCategories();
-      showSyncNotice("Quotes synced with server. Server updates applied.");
+  serverQuotes.forEach(serverQuote => {
+    const exists = quotes.some(local => local.text === serverQuote.text && local.category === serverQuote.category);
+    if (!exists) {
+      quotes.push(serverQuote);
+      updated = true;
     }
   });
+
+  if (updated) {
+    saveQuotes();
+    populateCategories();
+    showSyncNotice("Quotes synced with server. Server updates applied.");
+  }
 }
 
 // Export to JSON
@@ -199,7 +197,7 @@ newQuoteBtn.addEventListener('click', showRandomQuote);
 document.getElementById('exportBtn').addEventListener('click', exportQuotesToJson);
 document.getElementById('importFile').addEventListener('change', importFromJsonFile);
 
-// Init
+// Initialization
 loadQuotes();
 populateCategories();
 showRandomQuote();
@@ -208,5 +206,5 @@ createAddQuoteForm();
 const last = sessionStorage.getItem('lastQuote');
 if (last) quoteDisplay.textContent = last;
 
-// Checker-visible sync
+// Sync with server every 30 seconds
 setInterval(syncQuotes, 30000);
